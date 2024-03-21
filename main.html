@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Замовлення страв</title>
+    <style>
+        /* CSS для стилізації сторінки */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .menu-item {
+            margin-bottom: 10px;
+        }
+        .delete-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>МЕНЮ:</h1>
+        <div id="menu">
+            <!-- Місце для відображення меню -->
+        </div>
+        <hr>
+        <h2>Додати нову страву:</h2>
+        <input type="text" id="newItemName" placeholder="Назва страви">
+        <input type="number" id="newItemPrice" placeholder="Ціна страви">
+        <button onclick="addNewMenuItem()">Додати</button>
+        <hr>
+        <h2>Ваше замовлення:</h2>
+        <ul id="order">
+            <!-- Місце для відображення замовлення -->
+        </ul>
+        <p>Загальна сума: <span id="total">0</span> грн</p>
+        <hr>
+        <label for="orderNumber">Номер замовлення:</label>
+        <input type="number" id="orderNumber" placeholder="Введіть номер замовлення">
+        <button onclick="submitOrder()">Завершити замовлення</button>
+        <hr>
+        <h2>Історія замовлень:</h2>
+        <button onclick="clearOrderHistory()">Очистити історію</button>
+        <ul id="orderHistory">
+            <!-- Місце для відображення історії замовлень -->
+        </ul>
+    </div>
+
+    <script>
+        // JavaScript для взаємодії з користувачем та відправки запитів на сервер
+        let menu = {
+  
+        };
+
+        let order = [];
+        let total = 0;
+        let orderHistory = [];
+
+        function displayMenu() {
+            const menuDiv = document.getElementById('menu');
+            menuDiv.innerHTML = ''; // Очищення попереднього вмісту
+            for (const item in menu) {
+                const menuItem = document.createElement('div');
+                menuItem.classList.add('menu-item');
+                menuItem.innerHTML = ${item} - ${menu[item]} грн;
+                menuItem.onclick = function() {
+                    addToOrder(item);
+                };
+                const deleteBtn = document.createElement('span');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.innerText = 'X';
+                deleteBtn.onclick = function(event) {
+                    event.stopPropagation(); // Зупинити вспливання події, щоб не викликати addToOrder()
+                    deleteMenuItem(item);
+                };
+                menuItem.appendChild(deleteBtn);
+                menuDiv.appendChild(menuItem);
+            }
+        }
+
+        function addNewMenuItem() {
+            const newName = document.getElementById('newItemName').value;
+            const newPrice = parseFloat(document.getElementById('newItemPrice').value);
+            if (newName && newPrice && !isNaN(newPrice)) {
+                menu[newName] = newPrice;
+                document.getElementById('newItemName').value = '';
+                document.getElementById('newItemPrice').value = '';
+                displayMenu(); // Відображення оновленого меню після додавання нової страви
+            } else {
+                alert('Будь ласка, введіть правильну назву та ціну страви.');
+            }
+        }
+
+        function deleteMenuItem(name) {
+            delete menu[name];
+            displayMenu(); // Оновлення меню після видалення страви
+            // При видаленні страви, також видаляємо її з поточного замовлення, якщо вона там є
+            order = order.filter(item => item !== name);
+            total = order.reduce((acc, curr) => acc + menu[curr], 0);
+            updateOrderDisplay();
+        }
+        function addToOrder(item) {
+            order.push(item);
+            total += menu[item];
+            updateOrderDisplay();
+        }
+
+        function removeFromOrder(index) {
+            const removedItem = order.splice(index, 1)[0];
+            total -= menu[removedItem];
+            updateOrderDisplay();
+        }
+
+        function updateOrderDisplay() {
+            const orderList = document.getElementById('order');
+            orderList.innerHTML = '';
+            order.forEach((item, index) => {
+                orderList.innerHTML += <li>${item} <span class="delete-btn" onclick="removeFromOrder(${index})">X</span></li>;
+            });
+            document.getElementById('total').innerText = total;
+        }
+
+        function submitOrder() {
+            const orderNumber = document.getElementById('orderNumber').value;
+            if (!orderNumber || isNaN(orderNumber)) {
+                alert('Будь ласка, введіть коректний номер замовлення.');
+                return;
+            }
+            const currentOrder = {
+                number: orderNumber,
+                items: order.slice(),
+                totalPrice: total
+            };
+            orderHistory.push(currentOrder);
+            displayOrderHistory();
+            console.log('Замовлення:', currentOrder);
+            alert('Ваше замовлення успішно відправлено!');
+            order = [];
+            total = 0;
+            updateOrderDisplay(); // Очистка відображення замовлення
+        }
+
+        function displayOrderHistory() {
+            const orderHistoryList = document.getElementById('orderHistory');
+            orderHistoryList.innerHTML = '';
+            orderHistory.forEach(order => {
+                orderHistoryList.innerHTML += <li>Замовлення №${order.number}: ${order.items.join(', ')}, Загальна сума: ${order.totalPrice} грн</li>;
+            });
+        }
+
+        function clearOrderHistory() {
+            orderHistory = [];
+            displayOrderHistory();
+        }
+
+        // Викликаємо функцію для відображення меню при завантаженні сторінки
+        displayMenu();
+    </script>
+</body>
+</html>
