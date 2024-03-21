@@ -1,0 +1,21 @@
+/* CSS для стилізації сторінки */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+}
+.menu-item {
+    margin-bottom: 10px;
+}
+.delete-btn {
+    margin-left: 10px;
+    cursor: pointer;
+    color: red;
+}
